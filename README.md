@@ -37,7 +37,7 @@ ln -v gold /usr/local/bin
 
 ## Usage
 
-Print the below help with `gold --help`:
+Print the below message with `gold --help`. This is the public API.
 
 ```text
 gold [--help|-h]
@@ -65,3 +65,15 @@ gold <config-file> <sub-command>
 For an example usage, refer to the directory [test](./test).
 
 To run the first configuration, execute: `gold test/pass_fail/config.zsh run-all`.
+
+## Versioning
+
+<https://semver.org/>
+
+## License
+
+[MIT](./LICENSE)
+
+> THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+> IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+> FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. [...]
