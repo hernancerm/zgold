@@ -61,6 +61,7 @@ gold <config-file> <sub-command>
     - list: List all test cases.
     - run-all: Run all test cases.
     - run <test-case-index>: Run a single test case, by index.
+    - execute <test-case-index>: Execute the command corresponding to a test case, by index.
     - patch-all: Patch (fix with current diff output) all test cases.
     - patch <text-case-index>: Patch (fix with current diff output) a single test case, by index.
 ```
