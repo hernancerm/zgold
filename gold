@@ -1,0 +1,73 @@
+#!/bin/zsh -f
+
+# Parameters:
+# $1 Test file path. Must define the following parameters:
+#      - `test_cases`. Numerically indexed array with the name of the test cases. This allows gold
+#         to know how many test cases should be executed and provides a tag to print for each test.
+#      - `resources`. Holds the file path to a dir to provide data for the command (see below).
+#      - `command`. Command to execute which output is compared against a golden file. The file can
+#         be any valid Zsh command. Two strings are replaced before executing the command: <R> with
+#         the `resources` value and <I> with the test case index value.
+
+. "${1}"
+
+## @param $1 Test case index. This is used to find the associated resource files.
+## @param $2 Test case name. Used to print for user information.
+## @param $3 Resources directory file path.
+## @param $4 Command used to get the result to compare with the golden file.
+## @param $5 (optional) Patch or not to patch. By default, do not patch.
+## @stdout Diff or patch output.
+function _run_test {
+  echo "start: (${1}) ${2}"
+
+  # setup - data
+  local golden_file_path="${3}/${1}_golden.txt"
+  local command_output="$(eval ${${4//<R>/${3}}//<I>/${1}})"
+
+  # execute
+  local diff=$(diff -u "${golden_file_path}" <(echo "${command_output}"))
+
+  if [[ "${5}" = 'patch' ]]; then
+    # The command `patch` is not used since I ran into an error `patch:1: division by zero`.
+    echo "${command_output}" > "${golden_file_path}"
+    echo "Patch complete for: ${golden_file_path}"
+  elif [[ -n "${diff}" ]]; then
+    # verify
+    echo "${diff}" | delta
+  fi
+}
+
+# SUB COMMANDS
+
+## List all test cases.
+function list {
+  echo "$(typeset -p 1 test_cases)"
+}
+
+## Run all test cases.
+function run-all {
+  for (( i=1; i<=${#test_cases}; i++ )); do
+    _run_test $i "${test_cases[$i]}" "${resources}" "${command}"
+  done
+}
+
+## Run a single test case, by index.
+## @param $1 Test case number (index).
+function run {
+  _run_test $1 "${test_cases[$1]}" "${resources}" "${command}"
+}
+
+## Patch (fix with current diff output) all test cases.
+function patch-all {
+  for (( i=1; i<=${#test_cases}; i++ )); do
+    _run_test $i "${test_cases[$i]}" "${resources}" "${command}" 'patch'
+  done
+}
+
+## Patch (fix with current diff output) a single test case, by index.
+## @param $1 Test case number (index).
+function patch {
+  _run_test $1 "${test_cases[$1]}" "${resources}" "${command}" 'patch'
+}
+
+eval "${@[@]:2}"
