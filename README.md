@@ -43,7 +43,7 @@ Print the below message with `gold --help`. This is the public API.
 gold [--help|-h]
   Display this help message.
 
-gold [--version|-v]
+gold (--version|-v)
   Display the version.
 
 gold <config-file> <sub-command>

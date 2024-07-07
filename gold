@@ -6,7 +6,7 @@ typeset -r help_message='
   gold [--help|-h]
     Display this help message.
 
-  gold [--version|-v]
+  gold (--version|-v)
     Display the version.
 
   gold <config-file> <sub-command>
@@ -35,7 +35,7 @@ if [[ "${1}" = '--help' ]] || [[ "${1}" = '-h' ]] || [[ "${#@}" -eq 0 ]]; then
   return 0
 fi
 
-# Form: gold [--version|-v]
+# Form: gold (--version|-v)
 
 if [[ "${1}" = '--version' ]] || [[ "${1}" = '-v' ]]; then
   echo "${version}"
