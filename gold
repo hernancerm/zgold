@@ -1,7 +1,5 @@
 #!/bin/zsh -f
 
-typeset -r version='0.2.2'
-
 typeset -r help_message='
   gold [--help|-h]
     Display this help message.
@@ -38,7 +36,7 @@ fi
 # Form: gold (--version|-v)
 
 if [[ "${1}" = '--version' ]] || [[ "${1}" = '-v' ]]; then
-  echo "${version}"
+  echo '0.2.3-SNAPSHOT'
   return 0
 fi
 
