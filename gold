@@ -1,6 +1,6 @@
 #!/bin/zsh -f
 
-typeset -r version='0.2.0'
+typeset -r version='0.2.2'
 
 typeset -r help_message='
   gold [--help|-h]
