@@ -1,6 +1,6 @@
 #!/bin/zsh -f
 
-typeset -r help_message='
+typeset -r help_message='Usages:
   gold [--help|-h]
     Display this help message.
 
