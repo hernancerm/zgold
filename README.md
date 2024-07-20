@@ -69,7 +69,7 @@ Usages:
 
 For an example usage, refer to the directory [test](./test).
 
-To run the first configuration, execute: `gold test/pass_fail/config.zsh run-all`.
+Example configuration run: `./gold test/pass_fail/config.zsh run-all`.
 
 ## License
 
