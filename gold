@@ -36,7 +36,7 @@ fi
 # Form: gold (--version|-v)
 
 if [[ "${1}" = '--version' ]] || [[ "${1}" = '-v' ]]; then
-  echo '0.2.3-SNAPSHOT'
+  echo '0.2.3'
   return 0
 fi
 
