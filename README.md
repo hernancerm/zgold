@@ -29,7 +29,11 @@ Gold is a tool written in Zsh for golden testing on stdout/stderr of commands.
 
 ## Installation
 
-Clone this repository, then execute:
+Execute the script [install.zsh](./install.zsh):
+
+```
+source install.zsh
+```
 
 ```text
 cp -v gold /usr/local/bin
