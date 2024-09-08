@@ -83,7 +83,7 @@ function _run_test {
     echo "Patch complete for: ${golden_file_path}"
   elif [[ -n "${diff}" ]]; then
     # verify
-    command -v delta >/dev/null && echo "${diff}" | delta --pager 'less -rX' || echo "${diff}"
+    command -v delta >/dev/null && echo "${diff}" | delta --pager 'less -rFX' || echo "${diff}"
   fi
 }
 
