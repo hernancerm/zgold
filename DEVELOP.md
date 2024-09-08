@@ -1,4 +1,4 @@
-# Developing gold
+# Developing Gold
 
 ## Versioning
 
@@ -16,7 +16,11 @@ Doing a release:
    a placeholder next version as development progresses. The commit message should be: `release: set
    next dev version`.
 
-## Learning Zsh scripting
+## Learning Zsh for scripting
+
+The best resource I've found for learning Zsh scripting is the manual pages themselves. To open a
+manual page (man page) execute `man <page>`, e.g., `man zshparam`. Below are the pages I've found
+the most relevant:
 
 | Manual page | Contents |
 | --- | --- |
@@ -25,16 +29,13 @@ Doing a release:
 | zshmisc | Includes control statements, e.g., `if`, `while`, `for`, `case`. |
 | zshparam | Parameters. This is Zsh's approach to variables. |
 | zshexpn | Parameter expansion. This covers expresions beginning with `$.` |
-| zshoptions | Options, like `BEEP`. |
+| zshoptions | Options, e.g., `BEEP`, `HIST_IGNORE_DUPS`. |
 
 For a more pleasant experience viewing man pages, consider using
 [`spub-nvim-man`](https://github.com/hernancerm/scripts.public/blob/main/spub-nvim-man) (requires
-[Neovim](https://neovim.io/)).
+[Neovim](https://neovim.io/)). Once you have the script, execute it with a single argument being the
+name of the man page.
 
-See also: <https://zsh.sourceforge.io/Guide/zshguide.html>
-
-## Debugging
-
-Debugger for Zsh: <https://github.com/rocky/zshdb>
-
-Install with Homebrew: `brew install zshdb`
+Other resources:
+- [A User's Guide to the Z-Shell, by Peter Stephenson (2003)](https://zsh.sourceforge.io/Guide/zshguide.html).
+- Debugger for Zsh: <https://github.com/rocky/zshdb>. Install with Homebrew: `brew install zshdb`.
