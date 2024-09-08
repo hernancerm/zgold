@@ -45,7 +45,7 @@ fi
 # Form: gold (--version|-v)
 
 if [[ "${1}" = '--version' ]] || [[ "${1}" = '-v' ]]; then
-  echo '0.3.0'
+  echo '0.3.1-dev'
   return 0
 fi
 
