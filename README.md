@@ -1,4 +1,4 @@
-# gold
+# Gold
 
 Gold is a tool written in Zsh for golden testing on stdout/stderr of commands.
 
@@ -35,41 +35,9 @@ Execute the script [install.zsh](./install.zsh):
 source install.zsh
 ```
 
-```text
-cp -v gold /usr/local/bin
-```
-
 ## Usage
 
-Print the below message with `gold --help`. This is the public API.
-
-```text
-Usages:
-  gold [--help|-h]
-    Display this help message.
-
-  gold (--version|-v)
-    Display the version.
-
-  gold <config-file> <sub-command>
-    <config-file>
-      Config file path, written in Zsh, which must define the following parameters:
-        - `test_cases`. Numerically indexed array with the name of the test cases. This allows gold
-           to know how many test cases should be executed and provides a tag to print for each test.
-        - `resources`. Holds the file path to a dir to provide data for the command. At a minimum,
-           it is expected that for each test case there is one golden file in this directory with
-           the name `<index>_golden.txt`.
-        - `command`. Command to execute which output is compared against a golden file. The file can
-           be any valid Zsh command. Two strings are replaced before executing the command: <R> with
-           the `resources` value and <I> with the test case index (indices begin at 1).
-    <sub-command>
-      - list: List all test cases.
-      - run-all: Run all test cases.
-      - run <test-case-index>: Run a single test case, by index.
-      - execute <test-case-index>: Execute the command corresponding to a test case, by index.
-      - patch-all: Patch (fix with current diff output) all test cases.
-      - patch <text-case-index>: Patch (fix with current diff output) a single test case, by index.
-```
+See the built-in help with `gold --help`.
 
 For an example usage, refer to the directory [test](./test).
 
@@ -78,7 +46,3 @@ Example configuration run: `./gold test/pass_fail/config.zsh run-all`.
 ## License
 
 [MIT](./LICENSE)
-
-> THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-> IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-> FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. [...]
