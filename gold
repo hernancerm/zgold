@@ -82,7 +82,14 @@ function _run_test {
 
 ## List all test cases.
 function list {
-  echo "$(typeset -p 1 test_cases)"
+  local test_case_index=1
+  local heading='Index,Test case'
+  local body=''
+  for test_case in ${test_cases}; do
+    body="${body:+${body}\n}${test_case_index},${test_case}"
+    test_case_index=$((test_case_index+1))
+  done
+  echo "${heading}\n${body}" | column -s, -t
 }
 
 ## Run all test cases.
