@@ -19,13 +19,14 @@ Gold is a tool written in Zsh for golden testing on stdout/stderr of commands.
 - Declarative approach, leveraging a Zsh file to provide configuration and resource files.
 - Can be used to test software written in any language. The output of the binaries is what is tested.
 - When a test case does not pass, the diff is nicely displayed using [delta](https://github.com/dandavison/delta).
-- Patch the golden file of test cases currently not passing.
+- Patch the golden files of failing test cases.
 
 ## Requirements
 
 - `zsh` — <https://zsh.sourceforge.io>
   - In macOS this should already be installed.
 - `delta` (optional) — <https://github.com/dandavison/delta>
+  - Install with [Homebrew](https://brew.sh/): `brew install git-delta`.
 
 ## Installation
 
