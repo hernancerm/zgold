@@ -1,6 +1,7 @@
 # Gold
 
-Gold is a tool written in Zsh for golden testing on stdout/stderr of commands.
+Tool written in Zsh for implementing simple [golden
+tests](https://ro-che.info/articles/2017-12-04-golden-tests) on stdout/stderr.
 
 <table>
   <tr>
