@@ -1,39 +1,44 @@
 #!/bin/zsh -f
 
-typeset -r help_message='Usages:
-o gold [--help|-h]
+typeset -r help_message='USAGE
+  o gold [--help|-h]
     Display this help message.
 
-o gold (--version|-v)
+  o gold (--version|-v)
     Display the version.
 
-o gold <config-file> <sub-command>
+  o gold <config-file> <sub-command>
     <config-file>
-      Config file path, written in Zsh, which must define the following parameters:
-      test_cases
-        Numerically indexed array with the name of the test cases. This allows Gold to know how many
-        test cases should be executed and provides a tag to print for each test.
-      resources
-        Holds the file path to a dir to provide data for the command. At a minimum, it is expected
-        that for each test case there is one golden file in this directory with the name
-        `<index>_golden.txt`.
-      command
-        Command to execute which output is compared against a golden file. The file can be any valid
-        Zsh command. Two strings are replaced before executing the command: <R> with the `resources`
-        value and <I> with the test case index. Indices begin at 1.
+      Config file path, written in Zsh, which must define the following vars:
+        * test_cases
+            Numerically indexed array with the name of the test cases. This
+            allows Gold to know how many test cases should be executed and
+            provides a tag to print for each test.
+        * resources
+            Holds the file path to a dir to provide data for the command. At a
+            minimum, it is expected that for each test case there is one golden
+            file in this directory with the name `<index>_golden.txt`.
+        * command
+            Command to execute which output is compared against a golden file.
+            The file can be any valid Zsh command. Two strings are replaced
+            before executing the command: <R> with the value of `resources`
+            and <I> with the test case index. Indices begin at 1.
     <sub-command>
-      list
-        List all test cases.
-      run-all
-        Run all test cases.
-      run <test-case-index>
-        Run a single test case, by index.
-      execute <test-case-index>
-        Execute the command corresponding to a test case, by index.
-      patch-all
-        Patch (fix with current diff output) all test cases.
-      patch <text-case-index>
-        Patch (fix with current diff output) a single test case, by index.'
+      See the section SUB-COMMANDS.
+
+SUB-COMMANDS
+  * ls
+      List all test cases.
+  * run [<test-case-index>]
+      Run all test cases or a single test case by index.
+  * patch [<text-case-index>]
+      Patch (fix with current diff) all test cases or a single test case.
+  * exec <test-case-index>
+      Execute the command corresponding to a test case by index.
+
+EXAMPLES
+  * List all test cases: `gold test/all_pass/config.zsh ls`
+  * Run all test cases: `gold test/all_pass/config.zsh run`'
 
 # Form: gold [--help|-h]
 
@@ -60,7 +65,7 @@ function _build_command {
   echo "${${1//<R>/${3}}//<I>/${2}}"
 }
 
-## @param $1 Test case index. This is used to find the associated resource files.
+## @param $1 Test case index. Used to find the associated resource files.
 ## @param $2 Test case name. Used to print for user information.
 ## @param $3 Resources directory file path.
 ## @param $4 Command used to get the result to compare with the golden file.
@@ -78,19 +83,22 @@ function _run_test {
   local diff=$(diff -u "${golden_file_path}" <(echo "${command_output}"))
 
   if [[ "${5}" = 'patch' ]]; then
-    # The command `patch` is not used since I ran into an error `patch:1: division by zero`.
+    # The command `patch` is not used since I ran into an error `patch:1:
+    # division by zero`.
     echo "${command_output}" > "${golden_file_path}"
     echo "Patch complete for: ${golden_file_path}"
   elif [[ -n "${diff}" ]]; then
     # verify
-    command -v delta >/dev/null && echo "${diff}" | delta --pager 'less -rFX' || echo "${diff}"
+    command -v delta >/dev/null \
+      && echo "${diff}" | delta --pager 'less -rFX' \
+      || echo "${diff}"
   fi
 }
 
 # SUB COMMANDS
 
 ## List all test cases.
-function list {
+function ls {
   local -i test_case_index=1
   local heading='Index,Test case'
   local body=''
@@ -101,36 +109,34 @@ function list {
   echo "${heading}\n${body}" | column -s, -t
 }
 
-## Run all test cases.
-function run-all {
-  for (( i=1; i<=${#test_cases}; i++ )); do
-    _run_test $i "${test_cases[$i]}" "${resources}" "${command}"
-  done
-}
-
-## Run a single test case, by index.
+## Run all test cases or a single test case by index.
 ## @param $1 Test case number (index).
 function run {
+  if [[ -z $1 ]]; then
+    for (( i=1; i<=${#test_cases}; i++ )); do
+      _run_test $i "${test_cases[$i]}" "${resources}" "${command}"
+    done
+    exit 0
+  fi
   _run_test $1 "${test_cases[$1]}" "${resources}" "${command}"
 }
 
-## Run the command for a single test case, by index.
-## @param $1 Test case number (index).
-function execute {
-  eval $(_build_command "${command}" $1 "${resources}")
-}
-
-## Patch (fix with current diff output) all test cases.
-function patch-all {
-  for (( i=1; i<=${#test_cases}; i++ )); do
-    _run_test $i "${test_cases[$i]}" "${resources}" "${command}" 'patch'
-  done
-}
-
-## Patch (fix with current diff output) a single test case, by index.
+## Patch (fix with current diff) all test cases or a single test case by index.
 ## @param $1 Test case number (index).
 function patch {
+  if [[ -z $1 ]]; then
+    for (( i=1; i<=${#test_cases}; i++ )); do
+      _run_test $i "${test_cases[$i]}" "${resources}" "${command}" 'patch'
+    done
+    exit 0
+  fi
   _run_test $1 "${test_cases[$1]}" "${resources}" "${command}" 'patch'
+}
+
+## Run the command for a single test case by index.
+## @param $1 Test case number (index).
+function exec {
+  eval $(_build_command "${command}" $1 "${resources}")
 }
 
 eval "${@[@]:2}"
