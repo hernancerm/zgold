@@ -1,7 +1,6 @@
 # Gold
 
-Tool written in Zsh for implementing simple [golden
-tests](https://ro-che.info/articles/2017-12-04-golden-tests) on stdout/stderr.
+Tool written in Zsh for implementing simple golden tests on stdout/stderr.
 
 <table>
   <tr>
@@ -22,20 +21,9 @@ tests](https://ro-che.info/articles/2017-12-04-golden-tests) on stdout/stderr.
 - When a test case does not pass, the diff is nicely displayed using [delta](https://github.com/dandavison/delta).
 - Patch the golden files of failing test cases.
 
-## Requirements
-
-- `zsh` — <https://zsh.sourceforge.io>
-  - In macOS this should already be installed.
-- `delta` (optional) — <https://github.com/dandavison/delta>
-  - Install with [Homebrew](https://brew.sh/): `brew install git-delta`.
-
 ## Installation
 
-Execute the script [install.zsh](./install.zsh):
-
-```
-source install.zsh
-```
+In macOS, in a clone of this repo run `make`.
 
 ## Usage
 
