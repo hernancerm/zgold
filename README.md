@@ -22,6 +22,10 @@ See the built-in help with `zgold --help`
 
 Example: `zgold test/pass_fail/config.zsh run`
 
+## Development
+
+[DEVELOP.md](./DEVELOP.md)
+
 ## License
 
 [MIT](./LICENSE)
