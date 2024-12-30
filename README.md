@@ -1,37 +1,26 @@
-# Gold
+# ZGold
 
 Tool written in Zsh for implementing simple golden tests on stdout/stderr.
 
-<table>
-  <tr>
-    <th>All pass</th>
-    <th>One passes, one fails</th>
-  </tr>
-  <tr>
-    <th><img src="./media/all_pass.png"></th>
-    <th><img src="./media/pass_fail.png"></th>
-  </tr>
-</table>
-
 ## Features
 
-- Name test cases for easy identification in the output.
-- Declarative approach, leveraging a Zsh file to provide configuration and resource files.
-- Can be used to test software written in any language. The output of the binaries is what is tested.
-- When a test case does not pass, the diff is nicely displayed using [delta](https://github.com/dandavison/delta).
+- Declarative test cases specification.
+- Can be used to test software written in any language.
+- View diffs of non-passing tests using [delta](https://github.com/dandavison/delta).
 - Patch the golden files of failing test cases.
 
 ## Installation
 
-In macOS, in a clone of this repo run `make`.
+1. Install [GNU Make](https://www.gnu.org/software/make/). On macOS it's
+   installed with the Xcode Command Line Tools. Run `make -v` to check.
+2. In a clone of this repo run `make`. Currently Homebrew is assumed as the
+   package manager.
 
 ## Usage
 
-See the built-in help with `gold --help`.
+See the built-in help with `zgold --help`
 
-For an example usage, refer to the directory [test](./test).
-
-Example configuration run: `./gold test/pass_fail/config.zsh run-all`.
+Example: `zgold test/pass_fail/config.zsh run`
 
 ## License
 
