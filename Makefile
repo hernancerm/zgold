@@ -7,9 +7,9 @@ endif
 all: install
 
 .PHONY: install
-install: delta /usr/local/bin/gold
+install: delta /usr/local/bin/zgold
 
-/usr/local/bin/gold: ./gold
+/usr/local/bin/zgold: ./zgold
 	@cp -v $< $@
 
 .PHONY: $(CMD_PACKAGE_MANAGER)
