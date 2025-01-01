@@ -1,4 +1,4 @@
-resources='test/all_pass/rsc'
+resources='test/all_pass'
 
 command="echo Name: <N>. Resources: ${resources}"
 
