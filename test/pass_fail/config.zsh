@@ -1,8 +1,8 @@
-test_cases=(
-  first
-  second
+resources='test/pass_fail/rsc'
+
+command="echo Name: <N>. Resources: ${resources}"
+
+typeset -A test_cases=(
+  [first]="${command}"
+  [second]="${command}"
 )
-
-resources='test/pass_fail/resources'
-
-command='echo Index: <I>. Resources: <R>'
