@@ -7,19 +7,19 @@ typeset -r help_message='USAGE
   o gold (--version|-v)
     Display the version.
 
-  o gold <config-file> <sub-command>
+  o gold <config-file> [<sub-command>]
     <config-file>
       Config file path, written in Zsh, which must define the following vars:
         * test_cases
             Associative array. Keys are test case names and values are commands.
-            The commands can have the placeholder string <N>, which is substituted
-            by the name of the test case before the command is executed.
+            The commands can have the placeholder <N>, which is substituted by
+            the name of the test case before the command is executed.
         * resources
             Holds the path to a dir to provide data for the command. At a
             minimum, it is expected that for each test case there is one golden
             file in this directory with the name `<test_case_name>_golden.txt`.
     <sub-command>
-      See the section SUB-COMMANDS.
+      See the section SUB-COMMANDS. Default: `run`.
 
 SUB-COMMANDS
   * ls
@@ -27,7 +27,7 @@ SUB-COMMANDS
   * run [<test-case-name>]
       Run all test cases or a single test case by name.
   * patch [<text-case-name>]
-      Patch (fix with current diff) all test cases or a single test case by name.
+      Patch (with `run`s output) all test cases or a single test case by name.
   * exec <test-case-name>
       Execute the command corresponding to a test case by name.
 
@@ -114,7 +114,7 @@ if [[ ${#@} -eq 1 ]]; then
   exit 0
 fi
 
-## Patch (fix with current diff) all test cases or a single test case by name.
+## Patch (with `run`s output) all test cases or a single test case by name.
 ## @param $1 Test case name.
 function patch {
   if [[ -z ${1} ]]; then
