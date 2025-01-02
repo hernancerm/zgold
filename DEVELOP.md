@@ -1,5 +1,51 @@
 # Developing ZGold
 
+## Guidelines
+
+1. For every function added or modified, comply with what is described in the
+   sections [Comment docs](#comment-docs).
+
+## Comment docs
+
+```sh
+## Salute the callee.
+## @param $1 First name.
+## @param $2 Age in years.
+## @stdout Greeting.
+function greet {
+  echo "My name is ${1} and I'm ${2} yo."
+}
+```
+
+Javadoc-like comments are used to document Zsh functions. There is no tool which
+provides support for these, it's just an ad-hoc standard. These comments begin
+with two pound symbols (#) followed by an annotation, an optional [data
+type](#data-types-for-comment-docs) and an optional description.
+
+| Annotation             | Explanation                                                |
+|------------------------|------------------------------------------------------------|
+| `@param[:{type}] ${n}` | Function param, e.g., `@param $1`, `@param:int $1 Index.`  |
+| `@stdin[:{type}]`      | Standard input, e.g., `@stdin File contents of users.txt.` |
+| `@stdout[:{type}]`     | Standard output, e.g., `@stdout Greeting.`                 |
+| `@return ${n}`         | Function's exit code, e.g., `0`, `1`.                      |
+
+## Data types for comment docs
+
+**These are not Zsh data types**, merely documentation hints on how to handle
+the values, so the programmer is less lost in the fuziness of dynamic typing.
+Below are the data types.
+
+- `int`: Integer.
+- `string`: Plain text.
+- `iarray`: Numerically indexed array definition as per typeset.
+  - Example: `typeset -a x=(red 'yellowish green' blue)`
+- `ciarray`: Contents of numerically indexed array definition.
+  - Example: `red 'yellowish green' blue`
+- `aarray`: Associative array definition as per typeset.
+  - Example: `typeset -A x=([name]='Hernan Cervera' [color]=blue)`
+- `caarray`: Contents of associative array definition.
+  - Example: `[name]='Hernan Cervera' [color]=blue`
+
 ## Versioning
 
 <https://semver.org/>
