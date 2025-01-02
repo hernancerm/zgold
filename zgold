@@ -108,6 +108,12 @@ function run {
   _run_test ${1} "${resources}" "${test_cases[${1}]}"
 }
 
+## Default sub-command: `run`.
+if [[ ${#@} -eq 1 ]]; then
+  run
+  exit 0
+fi
+
 ## Patch (fix with current diff) all test cases or a single test case by name.
 ## @param $1 Test case name.
 function patch {
