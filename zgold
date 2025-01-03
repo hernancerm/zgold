@@ -74,6 +74,7 @@ function _run_test {
   # setup - data
   local golden_file_path="${2}/${1}_golden.txt"
   local command_output="$(eval $(_build_command "${3}" "${1}"))"
+  if ! [[ -f "${golden_file_path}" ]] touch "${golden_file_path}"
 
   # execute
   local diff=$(diff -u "${golden_file_path}" <(echo "${command_output}"))
