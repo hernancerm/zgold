@@ -9,7 +9,9 @@ typeset -r help_message='USAGE
 
   o gold <config-file> [<sub-command>]
     <config-file>
-      Config file path, written in Zsh, which must define the following vars:
+      Config file path, written in Zsh. If this arg is a dir path instead of a
+      file path, then the file is assumed to be `config.zsh` within the dir. The
+      config file must define the following vars:
         * test_cases
             Associative array. Keys are test case names and values are commands.
             The commands can have the placeholder <N>, which is substituted by
@@ -26,14 +28,15 @@ SUB-COMMANDS
       List all test cases.
   * run [<test-case-name>]
       Run all test cases or a single test case by name.
-  * patch [<text-case-name>]
+  * patch [<test-case-name>]
       Patch (with `run`s output) all test cases or a single test case by name.
   * exec <test-case-name>
       Execute the command corresponding to a test case by name.
 
 EXAMPLES
   * List all test cases: `zgold test/all_pass/config.zsh ls`
-  * Run all test cases: `zgold test/all_pass/config.zsh run`'
+  * Run all test cases: `zgold test/all_pass/config.zsh run`
+  * Run all test cases: `zgold test/all_pass`'
 
 # Form: gold [--help|-h]
 
@@ -51,7 +54,8 @@ fi
 
 # Form: gold <config-file> <sub-command>
 
-. "${1}"
+if [[ -f "${1}" ]] . "${1}"
+if [[ -d "${1}" ]] . "${1}/config.zsh"
 
 ## @param $1 Command.
 ## @param $2 Test case name.
@@ -75,8 +79,6 @@ function _run_test {
   local diff=$(diff -u "${golden_file_path}" <(echo "${command_output}"))
 
   if [[ "${4}" = 'patch' ]]; then
-    # The command `patch` is not used since I ran into an error `patch:1:
-    # division by zero`.
     echo "${command_output}" > "${golden_file_path}"
     echo "Patch complete for: ${golden_file_path}"
   elif [[ -n "${diff}" ]]; then
