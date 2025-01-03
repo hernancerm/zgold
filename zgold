@@ -20,6 +20,13 @@ typeset -r help_message='USAGE
             Holds the path to a dir to provide data for the command. At a
             minimum, it is expected that for each test case there is one golden
             file in this directory with the name `<test_case_name>_golden.txt`.
+      Optionally, the config file may also define these vars:
+        * pre_diff_hooks
+            Associative array. Keys are test case names and values are commands.
+            The output of the test case command is piped to the pre diff hook
+            command. This happens before the diff against the golden file. This
+            is useful to remove parts of the output of the test case command
+            which are expected to change among runs, such as timestamps.
     <sub-command>
       See the section SUB-COMMANDS. Default: `run`.
 
@@ -73,14 +80,19 @@ function _run_test {
 
   # setup - data
   local golden_file_path="${2}/${1}_golden.txt"
-  local command_output="$(eval $(_build_command "${3}" "${1}"))"
-  if ! [[ -f "${golden_file_path}" ]] touch "${golden_file_path}"
+  local cmd_output="$(eval $(_build_command "${3}" "${1}"))"
+  if ! [[ -f "${golden_file_path}" ]]; then
+    touch "${golden_file_path}"
+  fi
+  if [[ -n ${pre_diff_hooks} ]] && [[ -n "${pre_diff_hooks[${1}]}" ]]; then
+    cmd_output="$(eval "echo \"${cmd_output}\" | ${pre_diff_hooks[${1}]}")"
+  fi
 
   # execute
-  local diff=$(diff -u "${golden_file_path}" <(echo "${command_output}"))
+  local diff=$(diff -u "${golden_file_path}" <(echo "${cmd_output}"))
 
   if [[ "${4}" = 'patch' ]]; then
-    echo "${command_output}" > "${golden_file_path}"
+    echo "${cmd_output}" > "${golden_file_path}"
     echo "Patch complete for: ${golden_file_path}"
   elif [[ -n "${diff}" ]]; then
     # verify
