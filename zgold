@@ -40,6 +40,9 @@ SUB-COMMANDS
   * exec <test-case-name>
       Execute the command corresponding to a test case by name.
 
+EXIT CODES
+  The exit code is the total of failed test cases.
+
 EXAMPLES
   * List all test cases: `zgold test/all_pass/config.zsh ls`
   * Run all test cases: `zgold test/all_pass/config.zsh run`
@@ -99,7 +102,9 @@ function _run_test {
     command -v delta >/dev/null \
       && echo "${diff}" | delta --pager 'less -rFX' \
       || echo "${diff}"
+    return 1
   fi
+  return 0
 }
 
 # SUB COMMANDS
@@ -107,7 +112,7 @@ function _run_test {
 ## List all test cases.
 function ls {
   for test_case_name in ${(k)test_cases}; do
-    echo ${test_case_name}
+    echo "${test_case_name}"
   done
 }
 
@@ -115,12 +120,17 @@ function ls {
 ## @param $1 Test case name.
 function run {
   if [[ -z ${1} ]]; then
+    local -a exit_codes=()
     for test_case_name test_case_command in ${(kv)test_cases}; do
       _run_test "${test_case_name}" "${resources}" "${test_case_command}"
+      exit_codes+=($?)
     done
-    exit 0
+    # Total of failed test cases.
+    exit $(eval "echo $(( ${(j:+:)exit_codes} ))")
   fi
-  _run_test ${1} "${resources}" "${test_cases[${1}]}"
+  _run_test "${1}" "${resources}" "${test_cases[${1}]}"
+  # Total of failed test cases.
+  exit $?
 }
 
 ## Default sub-command: `run`.
