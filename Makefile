@@ -1,3 +1,5 @@
+SHELL := zsh
+
 ifeq ($(shell uname),Darwin)
 	CMD_PACKAGE_MANAGER := brew
 	CMD_PACKAGE_MANAGER_INSTALL := brew install
@@ -7,10 +9,13 @@ endif
 all: install
 
 .PHONY: install
-install: delta /usr/local/bin/zgold
+install: delta /usr/local/bin/zgold /usr/local/bin/zgold.zwc
 
 /usr/local/bin/zgold: ./zgold
 	@cp -v $< $@
+
+/usr/local/bin/zgold.zwc: /usr/local/bin/zgold
+	zcompile $<
 
 .PHONY: $(CMD_PACKAGE_MANAGER)
 # macOS is assumed to always be the case here.
@@ -21,4 +26,3 @@ $(CMD_PACKAGE_MANAGER):
 .PHONY: delta
 delta: $(CMD_PACKAGE_MANAGER)
 	@command -v delta > /dev/null || $(CMD_PACKAGE_MANAGER_INSTALL) $(PACKAGE_DELTA)
-
