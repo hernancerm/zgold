@@ -71,7 +71,7 @@ fi
 # Form: zgold -d <directory...>
 
 if [[ "${1}" = '-d' ]]; then
-  typeset -a exit_codes=()
+  typeset -i exit_code=0
   for dir in ${@[@]:2}; do
     test_cases=($(zgold "${dir}" ls))
     dir_basename="$(basename -a "${dir}")"
@@ -86,10 +86,10 @@ if [[ "${1}" = '-d' ]]; then
           }
         }'
     # About `pipestatus`: https://unix.stackexchange.com/a/14276
-    exit_codes+=(${pipestatus[1]})
+    exit_code+=${pipestatus[1]}
   done
   # Total of failed test cases.
-  exit $(eval "echo $(( ${(j:+:)exit_codes} ))")
+  exit ${exit_code}
 fi
 
 # Form: zgold <config-file> [<sub-command>]
@@ -150,13 +150,13 @@ function ls {
 ## @param $1 Test case name.
 function run {
   if [[ -z ${1} ]]; then
-    local -a exit_codes=()
+    typeset -i exit_code=0
     for test_case_name test_case_command in ${(kv)test_cases}; do
       _run_test "${test_case_name}" "${resources}" "${test_case_command}"
-      exit_codes+=($?)
+      exit_code+=$?
     done
     # Total of failed test cases.
-    exit $(eval "echo $(( ${(j:+:)exit_codes} ))")
+    exit ${exit_code}
   fi
   _run_test "${1}" "${resources}" "${test_cases[${1}]}"
   # Total of failed test cases.
