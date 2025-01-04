@@ -1,13 +1,13 @@
 #!/bin/zsh -f
 
 typeset -r help_message='USAGE
-  o gold [--help|-h]
+  o zgold [--help|-h]
     Display this help message.
 
-  o gold (--version|-v)
+  o zgold (--version|-v)
     Display the version.
 
-  o gold <config-file> [<sub-command>]
+  o zgold <config-file> [<sub-command>]
     <config-file>
       Config file path, written in Zsh. If this arg is a dir path instead of a
       file path, then the file is assumed to be `config.zsh` within the dir. The
@@ -30,6 +30,12 @@ typeset -r help_message='USAGE
     <sub-command>
       See the section SUB-COMMANDS. Default: `run`.
 
+  o zgold -d <directory...>
+    Execute the sub-command `run` for every directory.
+    <directory>
+      A dir which has a `config.zsh` file as per expected by the command form
+      `zgold <config-file [<sub-command>]>`. Useful for CI.
+
 SUB-COMMANDS
   * ls
       List all test cases.
@@ -48,21 +54,45 @@ EXAMPLES
   * Run all test cases: `zgold test/all_pass/config.zsh run`
   * Run all test cases: `zgold test/all_pass`'
 
-# Form: gold [--help|-h]
+# Form: zgold [--help|-h]
 
 if [[ "${1}" = '--help' ]] || [[ "${1}" = '-h' ]] || [[ "${#@}" -eq 0 ]]; then
   echo "${help_message}"
-  return 0
+  exit 0
 fi
 
-# Form: gold (--version|-v)
+# Form: zgold (--version|-v)
 
 if [[ "${1}" = '--version' ]] || [[ "${1}" = '-v' ]]; then
   echo '0.3.1-dev'
-  return 0
+  exit 0
 fi
 
-# Form: gold <config-file> <sub-command>
+# Form: zgold -d <directory...>
+
+if [[ "${1}" = '-d' ]]; then
+  typeset -a exit_codes=()
+  for dir in ${@[@]:2}; do
+    test_cases=($(zgold "${dir}" ls))
+    dir_basename="$(basename -a "${dir}")"
+    zgold "${dir}" run \
+      | awk -v dir="${dir_basename}" -v regex="^${(j:$|^:)test_cases}$" '
+        {
+          # Print the basename of the dir only before each test case name.
+          if (match($0, regex)) {
+            print(dir " -- " $0)
+          } else {
+            print($0)
+          }
+        }'
+    # About `pipestatus`: https://unix.stackexchange.com/a/14276
+    exit_codes+=(${pipestatus[1]})
+  done
+  # Total of failed test cases.
+  exit $(eval "echo $(( ${(j:+:)exit_codes} ))")
+fi
+
+# Form: zgold <config-file> [<sub-command>]
 
 if [[ -f "${1}" ]] . "${1}"
 if [[ -d "${1}" ]] . "${1}/config.zsh"
