@@ -64,7 +64,7 @@ fi
 # Form: zgold (--version|-v)
 
 if [[ "${1}" = '--version' ]] || [[ "${1}" = '-v' ]]; then
-  echo '0.4.0'
+  echo '0.4.1-dev'
   exit 0
 fi
 
