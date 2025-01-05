@@ -30,8 +30,8 @@ typeset -r help_message='USAGE
     <sub-command>
       See the section SUB-COMMANDS. Default: `run`.
 
-  o zgold -d <directory...>
-    Execute the sub-command `run` for every directory.
+  o zgold -b <directory...>
+    Batch run. Execute the sub-command `run` for every directory.
     <directory>
       A dir which has a `config.zsh` file as per expected by the command form
       `zgold <config-file [<sub-command>]`. Useful for CI.
@@ -96,42 +96,8 @@ function parse_args {
 
 # Parse command line arguments.
 eval "$(parse_args \
-  '--help -h --version -v -d' '' ${@})"
+  '--help -h --version -v -b' '' ${@})"
 eval "${args[positional]}"
-
-# Form: zgold [--help|-h]
-
-if [[ "${args[--help]}" = 'true' ]] \
-    || [[ "${args[-h]}" = 'true' ]] \
-    || [[ "${#@}" -eq 0 ]]; then
-  echo "${help_message}"
-  exit 0
-fi
-
-# Form: zgold (--version|-v)
-
-if [[ "${args[--version]}" = 'true' ]] \
-    || [[ "${args[-v]}" = 'true' ]]; then
-  echo '0.4.1-dev'
-  exit 0
-fi
-
-# Form: zgold -d <directory...>
-
-if [[ "${args[-d]}" = 'true' ]]; then
-  typeset -i exit_code=0
-  for dir in ${args_pos}; do
-    zgold "${dir}" run
-    exit_code+=$?
-  done
-  # Total of failed test cases.
-  exit ${exit_code}
-fi
-
-# Form: zgold <config-file> [<sub-command>]
-
-if [[ -f "${args_pos[1]}" ]] . "${args_pos[1]}"
-if [[ -d "${args_pos[1]}" ]] . "${args_pos[1]}/config.zsh"
 
 ## @param $1 Command.
 ## @param $2 Test case name.
@@ -177,7 +143,87 @@ function _run_test {
   return 0
 }
 
+## @stdout Static header.
+function _print_header {
+  local message='Launching ZGold'
+  if [[ -n "${STDOUT_TO_TERM}" ]]; then
+    echo "\e[33m${message}\e[0m"
+  else 
+    echo "${message}"
+  fi
+  echo "ZGold: $(zgold -v)"
+  echo "ZSH:   $(zsh --version)"
+}
+
+## @param $1 Amount of total test cases.
+## @param $2 Amount of failed test cases.
+## @param $3 Time in seconds execution took.
+## @stdout Footer.
+function _print_footer {
+  local message='Results'
+  echo "${1} tests run in ${3}s"
+  echo
+  if [[ -n "${STDOUT_TO_TERM}" ]]; then
+    echo "\e[33m\e[4m${message}\e[0m"
+  else
+    echo "${message}"
+  fi
+  echo "Passed $(( ${1} - ${2} ))"
+  echo "Failed ${2}"
+}
+
+# Detect if stdout refers to a terminal.
+if [[ -t 1 ]]; then
+  STDOUT_TO_TERM='true'
+fi
+
+# Form: zgold [--help|-h]
+
+if [[ "${args[--help]}" = 'true' ]] \
+    || [[ "${args[-h]}" = 'true' ]] \
+    || [[ "${#@}" -eq 0 ]]; then
+  echo "${help_message}"
+  exit 0
+fi
+
+# Form: zgold (--version|-v)
+
+if [[ "${args[--version]}" = 'true' ]] \
+    || [[ "${args[-v]}" = 'true' ]]; then
+  echo '0.4.1-dev'
+  exit 0
+fi
+
+# Form: zgold -b <directory...>
+
+if [[ "${args[-b]}" = 'true' ]]; then
+  typeset -i exit_code=0
+  typeset -i total_test_cases=0
+  _print_header
+  echo
+  local start_time=$(date +%s)
+  for dir in ${args_pos}; do
+    . "${dir}/config.zsh"
+    for test_case_name test_case_command in ${(kv)test_cases}; do
+      _run_test "${test_case_name}" "${resources}" "${test_case_command}"
+      exit_code+=$?
+      total_test_cases+=1
+    done
+  done
+  local end_time=$(date +%s)
+  echo
+  _print_footer \
+    ${total_test_cases} ${exit_code} $(( ${end_time} - ${start_time} ))
+  # Total of failed test cases.
+  exit ${exit_code}
+fi
+
 # SUB COMMANDS
+
+# Form: zgold <config-file> [<sub-command>]
+
+if [[ -f "${args_pos[1]}" ]] . "${args_pos[1]}"
+if [[ -d "${args_pos[1]}" ]] . "${args_pos[1]}/config.zsh"
 
 ## List all test cases.
 function ls {
@@ -189,16 +235,28 @@ function ls {
 ## Run all test cases or a single test case by name.
 ## @param $1 Test case name.
 function run {
+  _print_header
+  echo
+  # Run all tests from a config file.
   if [[ -z ${1} ]]; then
     typeset -i exit_code=0
+    local start_time=$(date +%s)
     for test_case_name test_case_command in ${(kv)test_cases}; do
       _run_test "${test_case_name}" "${resources}" "${test_case_command}"
       exit_code+=$?
     done
+    local end_time=$(date +%s)
+    echo
+    _print_footer ${#test_cases} ${exit_code} $(( ${end_time} - ${start_time} ))
     # Total of failed test cases.
     exit ${exit_code}
   fi
+  # Run a single test from a config file.
+  local start_time=$(date +%s)
   _run_test "${1}" "${resources}" "${test_cases[${1}]}"
+  local end_time=$(date +%s)
+  echo
+  _print_footer 1 $? $(( ${end_time} - ${start_time} ))
   # Total of failed test cases.
   exit $?
 }
