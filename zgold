@@ -14,8 +14,7 @@ typeset -r help_message='USAGE
       config file must define the following vars:
         * test_cases
             Associative array. Keys are test case names and values are commands.
-            The commands can have the placeholder <N>, which is substituted by
-            the name of the test case before the command is executed.
+            The output of the commands gets compared against the golden files.
         * resources
             Holds the path to a dir to provide data for the command. At a
             minimum, it is expected that for each test case there is one golden
@@ -100,27 +99,95 @@ eval "$(parse_args \
   '--help -h --version -v -b' '' ${@})"
 eval "${args[positional]}"
 
-## Pretty print using ANSI escape sequences.
+## Pretty print using ANSI escape sequences. Without new line ending.
 ## @param $1 ANSI escape sequence.
 ## @param $2 Message.
-function _pprint {
+function _pechon {
   if [[ -t 1 ]]; then
-    echo "${1}${2}\e[0m"
+    echo -n "${1}${2}\e[0m"
   else
-    echo "${2}"
+    echo -n "${2}"
   fi
+}
+
+## Pretty print using ANSI escape sequences. With new line ending.
+## @param $1 ANSI escape sequence.
+## @param $2 Message.
+function _pecho {
+  _pechon "$1" "$2"
+  echo
 }
 
 ## @param $1 Resources dir path.
 ## @param $2 Test case names.
 function _validate_config_file_params_are_loaded {
   if [[ -z "${1}" ]]; then
-    _pprint '\e[31m' 'The param "resources" is not defined in the config file.'
+    _pecho '\e[31m' 'The param "resources" is not defined in the config file.'
     exit -1
   fi
   if [[ -z "${2}" ]]; then
-    _pprint '\e[31m' 'The param "test_cases" is not defined in the config file.'
+    _pecho '\e[31m' 'The param "test_cases" is not defined in the config file.'
     exit -1
+  fi
+}
+
+## @param $1 Test case name.
+## @param $2 Resources directory path.
+## @param $3 Command used to get the result to compare with the golden file.
+## @stdout Diff on failure, nothing otherwise.
+function _run_test {
+  # Hint on slow tests.
+  if [[ -t 1 ]]; then
+    if [[ -d "${args_pos[1]}" ]]; then
+      _pecho '\e[90m' "$(basename -a ${2}) -- ${1}"
+    else
+      _pecho '\e[90m' "${1}"
+    fi
+  fi
+
+  # setup
+  local cmd_output="$(eval ${3})"
+  local golden_file_path="${2}/${1}_golden.txt"
+  if ! [[ -f "${golden_file_path}" ]]; then
+    touch "${golden_file_path}"
+  fi
+  # Apply hooks.
+  if [[ -n ${pre_diff_hooks} ]] && [[ -n "${pre_diff_hooks[${1}]}" ]]; then
+    cmd_output="$(eval "echo \"${cmd_output}\" | ${pre_diff_hooks[${1}]}")"
+  fi
+
+  # execute
+  local diff=$(diff -u "${golden_file_path}" <(echo "${cmd_output}"))
+
+  # verify
+  if [[ -n "${diff}" ]]; then
+    if [[ -t 1 ]]; then
+      # Overwrite last line in terminal.
+      # <https://stackoverflow.com/a/11283685>.
+      echo -n "\e[1A\e[K"
+    fi
+    if [[ -d "${args_pos[1]}" ]]; then
+      _pechon '\e[31m' '✘'; echo " $(basename -a ${2}) -- ${1}"
+    else
+      _pechon '\e[31m' '✘'; echo " ${1}"
+    fi
+    if [[ -n "$(command -v delta)" ]]; then
+      echo "${diff}" \
+        | sed '1,2d' \
+        | delta --hunk-header-style='line-number' --pager 'less -rFX'
+      echo
+    else
+      echo "${diff}"
+    fi
+    return 1
+  fi
+  if [[ -t 1 ]]; then
+    echo -n "\e[1A\e[K"
+  fi
+  if [[ -d "${args_pos[1]}" ]]; then
+    _pechon '\e[32m' '✔'; echo " $(basename -a ${2}) -- ${1}"
+  else
+    _pechon '\e[32m' '✔'; echo " ${1}"
   fi
 }
 
@@ -143,66 +210,9 @@ function _patch_test {
   echo "Patch complete for: ${golden_file_path}"
 }
 
-## @param $1 Test case name.
-## @param $2 Resources directory path.
-## @param $3 Command used to get the result to compare with the golden file.
-## @stdout Diff on failure, nothing otherwise.
-function _run_test {
-  # Hint on slow tests.
-  if [[ -t 1 ]]; then
-    if [[ -d "${args_pos[1]}" ]]; then
-      _pprint '\e[90m' "$(basename -a ${2}) -- ${1}"
-    else
-      _pprint '\e[90m' "${1}"
-    fi
-  fi
-
-  # setup
-  local cmd_output="$(eval ${3})"
-  local golden_file_path="${2}/${1}_golden.txt"
-  if ! [[ -f "${golden_file_path}" ]]; then
-    touch "${golden_file_path}"
-  fi
-  # Apply hooks.
-  if [[ -n ${pre_diff_hooks} ]] && [[ -n "${pre_diff_hooks[${1}]}" ]]; then
-    cmd_output="$(eval "echo \"${cmd_output}\" | ${pre_diff_hooks[${1}]}")"
-  fi
-
-  # execute
-  local diff=$(diff -u "${golden_file_path}" <(echo "${cmd_output}"))
-
-  # verify
-  if [[ -n "${diff}" ]]; then
-    # Overwrite last line in terminal.
-    # https://stackoverflow.com/a/11283685
-    if [[ -d "${args_pos[1]}" ]]; then
-      _pprint '\e[1A\e[K\e[31m' "$(basename -a ${2}) -- ${1}"
-    else
-      _pprint '\e[1A\e[K\e[31m' "${1}"
-    fi
-    if [[ -n "$(command -v delta)" ]]; then
-      echo "${diff}" \
-        | sed '1,2d' \
-        | delta --hunk-header-style='line-number' --pager 'less -rFX'
-      echo
-    else
-      echo "${diff}"
-    fi
-    return 1
-  fi
-  # Overwrite last line in terminal.
-  # <https://stackoverflow.com/a/11283685>.
-  if [[ -d "${args_pos[1]}" ]]; then
-    _pprint '\e[1A\e[K\e[32m' "$(basename -a ${2}) -- ${1}"
-  else
-    _pprint '\e[1A\e[K\e[32m' "${1}"
-  fi
-  return 0
-}
-
 ## @stdout Static header.
 function _print_header {
-  _pprint '\e[33m' 'Launching ZGold'
+  _pecho '\e[33m' 'Launching ZGold'
   echo "ZGold: $(zgold -v)"
   echo "ZSH:   $(zsh --version)"
 }
@@ -215,9 +225,9 @@ function _print_footer {
   local message='Results'
   echo "${1} tests run in ${3}s"
   echo
-  _pprint '\e[33m\e[4m' 'Results'
-  echo "Passed $(( ${1} - ${2} ))"
-  echo "Failed ${2}"
+  _pecho '\e[33m\e[4m' 'Results'
+  _pechon '\e[32m' '✔'; echo " Passed  $(( ${1} - ${2} ))"
+  _pechon '\e[31m' '✘'; echo " Failed  ${2}"
 }
 
 # Form: zgold [--help|-h]
