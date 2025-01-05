@@ -1,1 +1,1 @@
-Name: first. Resources: test/pass_fail
+A test case. Resources: test/pass_fail

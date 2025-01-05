@@ -1,1 +1,1 @@
-Name: second. Resources: test/all_pass
+Another test case. Resources: test/all_pass

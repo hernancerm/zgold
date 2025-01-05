@@ -99,12 +99,6 @@ eval "$(parse_args \
   '--help -h --version -v -b' '' ${@})"
 eval "${args[positional]}"
 
-## @param $1 Command.
-## @param $2 Test case name.
-function _build_command {
-  echo "${${1}//<N>/${2}}"
-}
-
 ## @param $1 Test case name.
 ## @param $2 Resources directory path.
 ## @param $3 Command used to get the result to compare with the golden file.
@@ -117,28 +111,31 @@ function _run_test {
     echo "${1}"
   fi
 
-  # setup - data
+  # setup
+  local cmd_output="$(eval ${3})"
   local golden_file_path="${2}/${1}_golden.txt"
-  local cmd_output="$(eval $(_build_command "${3}" "${1}"))"
   if ! [[ -f "${golden_file_path}" ]]; then
     touch "${golden_file_path}"
   fi
   if [[ -n ${pre_diff_hooks} ]] && [[ -n "${pre_diff_hooks[${1}]}" ]]; then
     cmd_output="$(eval "echo \"${cmd_output}\" | ${pre_diff_hooks[${1}]}")"
+  else
+    cmd_output="$(eval ${3})"
   fi
 
   # execute
   local diff=$(diff -u "${golden_file_path}" <(echo "${cmd_output}"))
 
+  # verify
   if [[ "${4}" = 'patch' ]]; then
     echo "${cmd_output}" > "${golden_file_path}"
     echo "Patch complete for: ${golden_file_path}"
   elif [[ -n "${diff}" ]]; then
-    # verify
     if [[ -n "$(command -v delta)" ]]; then
       echo "${diff}" \
         | sed '1,2d' \
         | delta --hunk-header-style='line-number' --pager 'less -rFX'
+      echo
     else
       echo "${diff}"
     fi
@@ -281,7 +278,14 @@ function patch {
 ## Run the command for a single test case by name.
 ## @param $1 Test case name.
 function exec {
-  eval $(_build_command "${test_cases[${1}]}" "${1}")
+  local cmd="${test_cases[${1}]}"
+  local cmd_output="$(eval ${cmd})"
+  if [[ -n ${pre_diff_hooks} ]] && [[ -n "${pre_diff_hooks[${1}]}" ]]; then
+    cmd_output="$(eval "echo \"${cmd_output}\" | ${pre_diff_hooks[${1}]}")"
+  else
+    cmd_output="$(eval ${cmd})"
+  fi
+  echo "${cmd_output}"
 }
 
 cmd="${args_pos[2,-1]}"

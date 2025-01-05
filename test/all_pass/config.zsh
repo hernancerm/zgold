@@ -1,10 +1,8 @@
 resources='test/all_pass'
 
-command="echo Name: <N>. Resources: ${resources}"
-
 typeset -A test_cases=(
   first
-  "${command}"
+  "echo 'A test case. Resources: ${resources}'"
   second
-  "${command}"
+  "echo 'Another test case. Resources: ${resources}'"
 )
