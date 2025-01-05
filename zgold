@@ -34,7 +34,7 @@ typeset -r help_message='USAGE
     Execute the sub-command `run` for every directory.
     <directory>
       A dir which has a `config.zsh` file as per expected by the command form
-      `zgold <config-file [<sub-command>]>`. Useful for CI.
+      `zgold <config-file [<sub-command>]`. Useful for CI.
 
 SUB-COMMANDS
   * ls
@@ -54,39 +54,75 @@ EXAMPLES
   * Run all test cases: `zgold test/all_pass/config.zsh run`
   * Run all test cases: `zgold test/all_pass`'
 
+# Command line argument parsing code from:
+# <https://github.com/hernancerm/args.zsh>
+function parse_args {
+  local -A args=()
+  local -a args_pos=()
+  eval "local -a bool_opts=(${1})"
+  eval "local -A defaults=(${2})"
+  local -a user_args=(${@[@]:3})
+  local skip_parse_of_current_arg='false'
+  for (( i=1 ; i<=${#user_args} ; i++ )); do
+    if [[ "${skip_parse_of_current_arg}" = 'true' ]]; then
+      skip_parse_of_current_arg='false'
+      continue
+    fi
+    # If arg begins with a dash (-) then it's an option.
+    if [[ "${${user_args[${i}]}[1]}" = '-' ]]; then
+      # Check if the option is bool(ean).
+      if [[ ${bool_opts[(i)${user_args[i]}]} -le ${#bool_opts} ]]; then
+        args+=(["${user_args[${i}]}"]='true')
+      else
+        args+=(["${user_args[${i}]}"]="${user_args[$((i+1))]}")
+        skip_parse_of_current_arg='true'
+      fi
+      continue
+    fi
+    # Otherwise, it's a positional arg.
+    args_pos+=("${user_args[$((i))]}")
+  done
+  # Serialize positional args as an iarray.
+  args[positional]="$(typeset -p args_pos)"
+  # Assign default values to unset options.
+  for flag_name flag_value in ${(kv)defaults}; do
+    if [[ -z "${args[${flag_name}]}" ]]; then
+      args+=([${flag_name}]=${flag_value})
+    fi
+  done
+  # Print aarray.
+  typeset -p args
+}
+
+# Parse command line arguments.
+eval "$(parse_args \
+  '--help -h --version -v -d' '' ${@})"
+eval "${args[positional]}"
+
 # Form: zgold [--help|-h]
 
-if [[ "${1}" = '--help' ]] || [[ "${1}" = '-h' ]] || [[ "${#@}" -eq 0 ]]; then
+if [[ "${args[--help]}" = 'true' ]] \
+    || [[ "${args[-h]}" = 'true' ]] \
+    || [[ "${#@}" -eq 0 ]]; then
   echo "${help_message}"
   exit 0
 fi
 
 # Form: zgold (--version|-v)
 
-if [[ "${1}" = '--version' ]] || [[ "${1}" = '-v' ]]; then
+if [[ "${args[--version]}" = 'true' ]] \
+    || [[ "${args[-v]}" = 'true' ]]; then
   echo '0.4.1-dev'
   exit 0
 fi
 
 # Form: zgold -d <directory...>
 
-if [[ "${1}" = '-d' ]]; then
+if [[ "${args[-d]}" = 'true' ]]; then
   typeset -i exit_code=0
-  for dir in ${@[@]:2}; do
-    test_cases=($(zgold "${dir}" ls))
-    dir_basename="$(basename -a "${dir}")"
-    zgold "${dir}" run \
-      | awk -v dir="${dir_basename}" -v regex="^${(j:$|^:)test_cases}$" '
-        {
-          # Print the basename of the dir only before each test case name.
-          if (match($0, regex)) {
-            print(dir " -- " $0)
-          } else {
-            print($0)
-          }
-        }'
-    # About `pipestatus`: https://unix.stackexchange.com/a/14276
-    exit_code+=${pipestatus[1]}
+  for dir in ${args_pos}; do
+    zgold "${dir}" run
+    exit_code+=$?
   done
   # Total of failed test cases.
   exit ${exit_code}
@@ -94,8 +130,8 @@ fi
 
 # Form: zgold <config-file> [<sub-command>]
 
-if [[ -f "${1}" ]] . "${1}"
-if [[ -d "${1}" ]] . "${1}/config.zsh"
+if [[ -f "${args_pos[1]}" ]] . "${args_pos[1]}"
+if [[ -d "${args_pos[1]}" ]] . "${args_pos[1]}/config.zsh"
 
 ## @param $1 Command.
 ## @param $2 Test case name.
@@ -109,7 +145,11 @@ function _build_command {
 ## @param $4 (optional) Patch or not to patch. By default, do not patch.
 ## @stdout Diff or patch output.
 function _run_test {
-  echo "${1}"
+  if [[ -d "${args_pos[1]}" ]]; then
+    echo "$(basename -a ${2}) -- ${1}"
+  else
+    echo "${1}"
+  fi
 
   # setup - data
   local golden_file_path="${2}/${1}_golden.txt"
@@ -163,12 +203,6 @@ function run {
   exit $?
 }
 
-## Default sub-command: `run`.
-if [[ ${#@} -eq 1 ]]; then
-  run
-  exit 0
-fi
-
 ## Patch (with `run`s output) all test cases or a single test case by name.
 ## @param $1 Test case name.
 function patch {
@@ -187,4 +221,9 @@ function exec {
   eval $(_build_command "${test_cases[${1}]}" "${1}")
 }
 
-eval "${@[@]:2}"
+cmd="${args_pos[2,-1]}"
+# Default sub-command: `run`.
+if [[ ${#args_pos} -eq 1 ]] cmd='run'
+
+# Execute sub-comand.
+eval "${cmd}"
