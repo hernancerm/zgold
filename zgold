@@ -135,9 +135,13 @@ function _run_test {
     echo "Patch complete for: ${golden_file_path}"
   elif [[ -n "${diff}" ]]; then
     # verify
-    command -v delta >/dev/null \
-      && echo "${diff}" | delta --pager 'less -rFX' \
-      || echo "${diff}"
+    if [[ -n "$(command -v delta)" ]]; then
+      echo "${diff}" \
+        | sed '1,2d' \
+        | delta --hunk-header-style='line-number' --pager 'less -rFX'
+    else
+      echo "${diff}"
+    fi
     return 1
   fi
   return 0
