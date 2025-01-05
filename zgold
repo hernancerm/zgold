@@ -117,10 +117,9 @@ function _run_test {
   if ! [[ -f "${golden_file_path}" ]]; then
     touch "${golden_file_path}"
   fi
+  # Apply hooks.
   if [[ -n ${pre_diff_hooks} ]] && [[ -n "${pre_diff_hooks[${1}]}" ]]; then
     cmd_output="$(eval "echo \"${cmd_output}\" | ${pre_diff_hooks[${1}]}")"
-  else
-    cmd_output="$(eval ${3})"
   fi
 
   # execute
@@ -280,10 +279,9 @@ function patch {
 function exec {
   local cmd="${test_cases[${1}]}"
   local cmd_output="$(eval ${cmd})"
+  # Apply hooks.
   if [[ -n ${pre_diff_hooks} ]] && [[ -n "${pre_diff_hooks[${1}]}" ]]; then
     cmd_output="$(eval "echo \"${cmd_output}\" | ${pre_diff_hooks[${1}]}")"
-  else
-    cmd_output="$(eval ${cmd})"
   fi
   echo "${cmd_output}"
 }
