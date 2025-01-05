@@ -42,7 +42,7 @@ SUB-COMMANDS
   * run [<test-case-name>]
       Run all test cases or a single test case by name.
   * patch [<test-case-name>]
-      Patch (with `run`s output) all test cases or a single test case by name.
+      Patch all test cases or a single test case by name.
   * exec <test-case-name>
       Execute the command corresponding to a test case by name.
 
@@ -127,8 +127,26 @@ function _validate_config_file_params_are_loaded {
 ## @param $1 Test case name.
 ## @param $2 Resources directory path.
 ## @param $3 Command used to get the result to compare with the golden file.
-## @param $4 (optional) Patch or not to patch. By default, do not patch.
-## @stdout Diff or patch output.
+## @stdout Patch info.
+function _patch_test {
+  local cmd_output="$(eval ${3})"
+  local golden_file_path="${2}/${1}_golden.txt"
+  if ! [[ -f "${golden_file_path}" ]]; then
+    touch "${golden_file_path}"
+  fi
+  # Apply hooks.
+  if [[ -n ${pre_diff_hooks} ]] && [[ -n "${pre_diff_hooks[${1}]}" ]]; then
+    cmd_output="$(eval "echo \"${cmd_output}\" | ${pre_diff_hooks[${1}]}")"
+  fi
+  local diff=$(diff -u "${golden_file_path}" <(echo "${cmd_output}"))
+  echo "${cmd_output}" > "${golden_file_path}"
+  echo "Patch complete for: ${golden_file_path}"
+}
+
+## @param $1 Test case name.
+## @param $2 Resources directory path.
+## @param $3 Command used to get the result to compare with the golden file.
+## @stdout Diff on failure, nothing otherwise.
 function _run_test {
   # Hint on slow tests.
   if [[ -t 1 ]]; then
@@ -156,19 +174,14 @@ function _run_test {
   local diff=$(diff -u "${golden_file_path}" <(echo "${cmd_output}"))
 
   # verify
-  if [[ "${4}" = 'patch' ]]; then
-    echo "${cmd_output}" > "${golden_file_path}"
-    echo "Patch complete for: ${golden_file_path}"
-  elif [[ -n "${diff}" ]]; then
+  if [[ -n "${diff}" ]]; then
     # Overwrite last line in terminal.
     # https://stackoverflow.com/a/11283685
-    printf '\e[1A\e[K\e[31m'
     if [[ -d "${args_pos[1]}" ]]; then
-      echo "$(basename -a ${2}) -- ${1}"
+      _pprint '\e[1A\e[K\e[31m' "$(basename -a ${2}) -- ${1}"
     else
-      echo "${1}"
+      _pprint '\e[1A\e[K\e[31m' "${1}"
     fi
-    printf '\e[0m'
     if [[ -n "$(command -v delta)" ]]; then
       echo "${diff}" \
         | sed '1,2d' \
@@ -298,16 +311,16 @@ function run {
   exit ${exit_code}
 }
 
-## Patch (with `run`s output) all test cases or a single test case by name.
+## Patch all test cases or a single test case by name.
 ## @param $1 Test case name.
 function patch {
   if [[ -z ${1} ]]; then
     for test_case_name test_case_cmd in ${(kv)test_cases}; do
-      _run_test "${test_case_name}" "${resources}" "${test_case_cmd}" 'patch'
+      _patch_test "${test_case_name}" "${resources}" "${test_case_cmd}"
     done
     exit 0
   fi
-  _run_test "${1}" "${resources}" "${test_cases[${1}]}" 'patch'
+  _patch_test "${1}" "${resources}" "${test_cases[${1}]}"
 }
 
 ## Run the command for a single test case by name.
