@@ -47,7 +47,8 @@ SUB-COMMANDS
       Execute the command corresponding to a test case by name.
 
 EXIT CODES
-  The exit code is the total of failed test cases.
+  * When a positive integer, the exit code is the total of failed test cases.
+  * When -1, a config file is invalid.
 
 EXAMPLES
   * List all test cases: `zgold test/all_pass/config.zsh ls`
@@ -99,17 +100,42 @@ eval "$(parse_args \
   '--help -h --version -v -b' '' ${@})"
 eval "${args[positional]}"
 
+## @param $1 Resources dir path.
+## @param $2 Test case names.
+function _validate_config_file_params_are_loaded {
+  if [[ -z "${1}" ]]; then
+    local message='The param "resources" is not defined in the config file.'
+    if [[ -n "${STDOUT_TO_TERM}" ]]; then
+      echo "\e[31m${message}\e[0m"
+    else
+      echo "${message}"
+    fi
+    exit -1
+  fi
+  if [[ -z "${2}" ]]; then
+    local message='The param "test_cases" is not defined in the config file.'
+    if [[ -n "${STDOUT_TO_TERM}" ]]; then
+      echo "\e[31m${message}\e[0m"
+    else
+      echo "${message}"
+    fi
+    exit -1
+  fi
+}
+
 ## @param $1 Test case name.
 ## @param $2 Resources directory path.
 ## @param $3 Command used to get the result to compare with the golden file.
 ## @param $4 (optional) Patch or not to patch. By default, do not patch.
 ## @stdout Diff or patch output.
 function _run_test {
+  printf '\e[90m'
   if [[ -d "${args_pos[1]}" ]]; then
     echo "$(basename -a ${2}) -- ${1}"
   else
     echo "${1}"
   fi
+  printf '\e[0m'
 
   # setup
   local cmd_output="$(eval ${3})"
@@ -130,6 +156,15 @@ function _run_test {
     echo "${cmd_output}" > "${golden_file_path}"
     echo "Patch complete for: ${golden_file_path}"
   elif [[ -n "${diff}" ]]; then
+    # Overwrite last line in terminal.
+    # https://stackoverflow.com/a/11283685
+    printf '\e[1A\e[K\e[31m'
+    if [[ -d "${args_pos[1]}" ]]; then
+      echo "$(basename -a ${2}) -- ${1}"
+    else
+      echo "${1}"
+    fi
+    printf '\e[0m'
     if [[ -n "$(command -v delta)" ]]; then
       echo "${diff}" \
         | sed '1,2d' \
@@ -140,6 +175,15 @@ function _run_test {
     fi
     return 1
   fi
+  # Overwrite last line in terminal.
+  # https://stackoverflow.com/a/11283685
+  printf '\e[1A\e[K\e[32m'
+  if [[ -d "${args_pos[1]}" ]]; then
+    echo "$(basename -a ${2}) -- ${1}"
+  else
+    echo "${1}"
+  fi
+  printf '\e[0m'
   return 0
 }
 
@@ -197,13 +241,15 @@ fi
 # Form: zgold -b <directory...>
 
 if [[ "${args[-b]}" = 'true' ]]; then
-  typeset -i exit_code=0
-  typeset -i total_test_cases=0
   _print_header
   echo
+  typeset -i exit_code=0
+  typeset -i total_test_cases=0
   local start_time=$(date +%s)
   for dir in ${args_pos}; do
     . "${dir}/config.zsh"
+    _validate_config_file_params_are_loaded \
+      "${resources}" "${(k)test_cases}"
     for test_case_name test_case_command in ${(kv)test_cases}; do
       _run_test "${test_case_name}" "${resources}" "${test_case_command}"
       exit_code+=$?
@@ -235,9 +281,11 @@ function ls {
 ## Run all test cases or a single test case by name.
 ## @param $1 Test case name.
 function run {
-  typeset -i exit_code=0
   _print_header
   echo
+  typeset -i exit_code=0
+    _validate_config_file_params_are_loaded \
+      "${resources}" "${(k)test_cases}"
   # Run all tests from a config file.
   if [[ -z ${1} ]]; then
     local start_time=$(date +%s)
