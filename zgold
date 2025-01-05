@@ -150,13 +150,11 @@ function _patch_test {
 function _run_test {
   # Hint on slow tests.
   if [[ -t 1 ]]; then
-    printf '\e[90m'
     if [[ -d "${args_pos[1]}" ]]; then
-      echo "$(basename -a ${2}) -- ${1}"
+      _pprint '\e[90m' "$(basename -a ${2}) -- ${1}"
     else
-      echo "${1}"
+      _pprint '\e[90m' "${1}"
     fi
-    printf '\e[0m'
   fi
 
   # setup
