@@ -57,7 +57,7 @@ avoids functions being coupled to global parameters.**
     - Use case: Passing an array with a *specific name* to the caller.
 - `caarray`: Contents within the parentheses of an aarray.
     - Example: `[color]=blue [name]='Hernan Cervera'`
-    - Use case: Passing an array to the caller. The caller decides the name.
+    - Use case: Passing an array to the caller. The caller decides the array
       name using `eval`.
 
 Function `tac`: Convert either iarray→ciarray or aarray→caarray:
