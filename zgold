@@ -239,11 +239,11 @@ function ls {
 ## Run all test cases or a single test case by name.
 ## @param $1 Test case name.
 function run {
+  typeset -i exit_code=0
   _print_header
   echo
   # Run all tests from a config file.
   if [[ -z ${1} ]]; then
-    typeset -i exit_code=0
     local start_time=$(date +%s)
     for test_case_name test_case_command in ${(kv)test_cases}; do
       _run_test "${test_case_name}" "${resources}" "${test_case_command}"
@@ -258,11 +258,12 @@ function run {
   # Run a single test from a config file.
   local start_time=$(date +%s)
   _run_test "${1}" "${resources}" "${test_cases[${1}]}"
+  exit_code+=$?
   local end_time=$(date +%s)
   echo
-  _print_footer 1 $? $(( ${end_time} - ${start_time} ))
+  _print_footer 1 ${exit_code} $(( ${end_time} - ${start_time} ))
   # Total of failed test cases.
-  exit $?
+  exit ${exit_code}
 }
 
 ## Patch (with `run`s output) all test cases or a single test case by name.
