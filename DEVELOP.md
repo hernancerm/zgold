@@ -80,7 +80,7 @@ Pass a numerically indexed array to a function:
 ```sh
 ## @param:ciarray $1
 ## @stdout:string Pretty-printed array definition.
-function print_ciarray_definition {
+function pretty_print_array {
   eval "local -a array=(${1})"
   typeset -p 1 array
 }
@@ -91,7 +91,7 @@ typeset -a names=(
   "Juan's Apostrophe"
 )
 
-print_ciarray "$(tac "$(typeset names)")"
+pretty_print_array "$(tac "$(typeset names)")"
 # typeset -a array=(
 #   'Hernán Cervera'
 #   'Dwayne "The Rock" Johnson'
@@ -104,7 +104,7 @@ Pass an associative array to a function:
 ```sh
 ## @param:caarray $1
 ## @stdout:string Pretty-printed array definition.
-function print_caarray_definition {
+function pretty_print_array {
   eval "local -A array=(${1})"
   typeset -p 1 array
 }
@@ -115,7 +115,7 @@ typeset -A name_to_mood=(
   ["Juan's Apostrophe"]=exhilarated
 )
 
-print_caarray "$(tac "$(typeset name_to_mood)")"
+pretty_print_array "$(tac "$(typeset name_to_mood)")"
 # typeset -A array=(
 #   ['Dwayne "The Rock" Johnson']='always confident'
 #   ['Hernán Cervera']=good
