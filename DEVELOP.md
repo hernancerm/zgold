@@ -31,20 +31,141 @@ type](#data-types-for-comment-docs) and an optional description.
 
 ## Data types for comment docs
 
-**These are not Zsh data types**, merely documentation hints on how to handle
+**These are not Zsh data types but rather documentation hints** on how to handle
 the values, so the programmer is less lost in the fuziness of dynamic typing.
-Below are the data types.
+The actual Zsh data types are defined using the `typeset` builtin. Numerically
+indexed arrays are defined using `typeset -a`; associative arrays are defined
+using `typeset -A`.
+
+**The data types iarray, ciarray, aarray and caarray, along with the `tac`
+function, are useful to emulate passing arrays by value to functions. This
+avoids functions being coupled to global parameters.**
 
 - `int`: Integer.
 - `string`: Plain text.
-- `iarray`: Numerically indexed array definition as per typeset.
-  - Example: `typeset -a x=(red 'yellowish green' blue)`
-- `ciarray`: Contents of numerically indexed array definition.
-  - Example: `red 'yellowish green' blue`
-- `aarray`: Associative array definition as per typeset.
-  - Example: `typeset -A x=([name]='Hernan Cervera' [color]=blue)`
-- `caarray`: Contents of associative array definition.
-  - Example: `[name]='Hernan Cervera' [color]=blue`
+- `iarray`: Given *x* as a **numerically indexed array param**, the type iarray
+  is the output of `typeset x`.
+    - Example: `x=( red 'yellowish green' blue )`.
+    - Use case: Passing an array with a *specific name* to the caller.
+- `ciarray`: Contents within the parentheses of an iarray.
+    - Example: `red 'yellowish green' blue`
+    - Use case: Passing an array to the caller. The caller decides the array
+      name using `eval`.
+- `aarray`: Given *x* as an **associative array param**, the type aarray is the
+  output of `typeset x`.
+    - Example: `x=( [color]=blue [name]='Hernan Cervera' )`
+    - Use case: Passing an array with a *specific name* to the caller.
+- `caarray`: Contents within the parentheses of an aarray.
+    - Example: `[color]=blue [name]='Hernan Cervera'`
+    - Use case: Passing an array to the caller. The caller decides the name.
+      name using `eval`.
+
+Function `tac`: Convert either iarray→ciarray or aarray→caarray:
+
+```sh
+## To Array Contents.
+## If the arg $1 is an iarray, then stdout is a ciarray.
+## If the arg $1 is an aarray, then stdout is a caarray.
+## @param:iarray|aarray $1
+## @stdout:ciarray|caarray
+function tac {
+  echo "${${(S)${1}/*=/}[3,-3]}"
+}
+```
+
+## Zsh recipes
+
+Pass a numerically indexed array to a function:
+
+```sh
+## @param:ciarray $1
+## @stdout:string Pretty-printed array definition.
+function print_ciarray_definition {
+  eval "local -a array=(${1})"
+  typeset -p 1 array
+}
+
+typeset -a names=(
+  'Hernán Cervera'
+  'Dwayne "The Rock" Johnson'
+  "Juan's Apostrophe"
+)
+
+print_ciarray "$(tac "$(typeset names)")"
+# typeset -a array=(
+#   'Hernán Cervera'
+#   'Dwayne "The Rock" Johnson'
+#   'Juan'\''s Apostrophe'
+# )
+```
+
+Pass an associative array to a function:
+
+```sh
+## @param:caarray $1
+## @stdout:string Pretty-printed array definition.
+function print_caarray_definition {
+  eval "local -A array=(${1})"
+  typeset -p 1 array
+}
+
+typeset -A name_to_mood=(
+  ['Hernán Cervera']=good
+  ['Dwayne "The Rock" Johnson']='always confident'
+  ["Juan's Apostrophe"]=exhilarated
+)
+
+print_caarray "$(tac "$(typeset name_to_mood)")"
+# typeset -A array=(
+#   ['Dwayne "The Rock" Johnson']='always confident'
+#   ['Hernán Cervera']=good
+#   ['Juan'\''s Apostrophe']=exhilarated
+# )
+```
+
+Return a numerically indexed array from a function:
+
+```sh
+## @stdout:ciarray
+function print_ciarray {
+  typeset -a names=(
+    'Hernán Cervera'
+    'Dwayne "The Rock" Johnson'
+    "Juan's Apostrophe"
+  )
+  tac "$(typeset names)"
+}
+
+eval "typeset -a names_from_fn=($(print_ciarray))"
+typeset -p 1 names_from_fn
+# typeset -a names_from_fn=(
+#   'Hernán Cervera'
+#   'Dwayne "The Rock" Johnson'
+#   'Juan'\''s Apostrophe'
+# )
+```
+
+Return an associative array from a function:
+
+```sh
+## @stdout:caarray
+function print_caarray {
+  local -A name_to_mood=(
+    ['Hernán Cervera']=good
+    ['Dwayne "The Rock" Johnson']='always confident'
+    ["Juan's Apostrophe"]=exhilarated
+  )
+  tac "$(typeset name_to_mood)"
+}
+
+eval "typeset -A name_to_mood_from_fn=($(print_caarray))"
+typeset -p 1 name_to_mood_from_fn
+# typeset -A name_to_mood_from_fn=(
+#   ['Dwayne "The Rock" Johnson']='always confident'
+#   ['Hernán Cervera']=good
+#   ['Juan'\''s Apostrophe']=exhilarated
+# )
+```
 
 ## Versioning
 
