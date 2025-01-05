@@ -44,16 +44,16 @@ avoids functions being coupled to global parameters.**
 - `int`: Integer.
 - `string`: Plain text.
 - `iarray`: Given *x* as a **numerically indexed array param**, the type iarray
-  is the output of `typeset x`.
-    - Example: `x=( red 'yellowish green' blue )`.
+  is the output of `typeset -p x`, which is a sourceable array definition.
+    - Example: `typeset -a x=( red 'yellowish green' blue )`.
     - Use case: Passing an array with a *specific name* to the caller.
 - `ciarray`: Contents within the parentheses of an iarray.
     - Example: `red 'yellowish green' blue`
     - Use case: Passing an array to the caller. The caller decides the array
       name using `eval`.
 - `aarray`: Given *x* as an **associative array param**, the type aarray is the
-  output of `typeset x`.
-    - Example: `x=( [color]=blue [name]='Hernan Cervera' )`
+  output of `typeset -p x`, which is a sourceable array definition.
+    - Example: `typeset -A x=( [color]=blue [name]='Hernan Cervera' )`
     - Use case: Passing an array with a *specific name* to the caller.
 - `caarray`: Contents within the parentheses of an aarray.
     - Example: `[color]=blue [name]='Hernan Cervera'`
