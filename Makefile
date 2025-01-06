@@ -8,9 +8,9 @@ endif
 
 all: install
 
-.PHONY: test
-test: install
-	@zgold -b ./test/*
+.PHONY: demo
+demo: install
+	@zgold -b ./demo/*
 
 .PHONY: install
 install: delta /usr/local/bin/zgold /usr/local/bin/zgold.zwc

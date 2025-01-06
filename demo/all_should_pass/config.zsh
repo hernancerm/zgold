@@ -1,8 +1,8 @@
-resources='test/all_should_pass'
+resources='demo/all_should_pass'
 
 typeset -A test_cases=(
-  succeds_1
+  succeeds_1
   "echo 'Hello World'"
-  succeds_2
+  succeeds_2
   "echo 'Bye World'"
 )

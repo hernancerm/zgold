@@ -1,4 +1,4 @@
-resources='test/mask_with_a_pre_diff_hook'
+resources='demo/mask_with_a_pre_diff_hook'
 
 typeset -A test_cases=(
   mask_timestamp

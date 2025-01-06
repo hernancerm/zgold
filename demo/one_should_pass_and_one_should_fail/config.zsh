@@ -1,4 +1,4 @@
-resources='test/one_should_pass_and_one_should_fail'
+resources='demo/one_should_pass_and_one_should_fail'
 
 typeset -A test_cases=(
   succeds

@@ -23,7 +23,7 @@ Only tested on macOS.
 Once ZGold is installed:
 
 - See the built-in help with `zgold --help`
-- For sample output, execute this in this repo: `zgold -b test/*`
+- For sample output, execute this in this repo: `zgold -b demo/*`
 
 ## Development
 

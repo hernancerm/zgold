@@ -172,7 +172,7 @@ function _run_test {
       _pechon '\e[31m' '✘'; echo " ${1}"
     fi
     _pecho '\e[31m\e[4m' 'Unexpected output for command:'
-    _pecho '\e[31m' "${3}"
+    _pechon '\e[31m' "${3}"
     if [[ -t 1 ]] && [[ -n "$(command -v delta)" ]]; then
       echo "${diff}" \
         | sed '1,2d' \
