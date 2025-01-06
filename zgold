@@ -173,7 +173,7 @@ function _run_test {
     fi
     _pecho '\e[31m\e[4m' 'Unexpected output for command:'
     _pecho '\e[31m' "${3}"
-    if [[ -n "$(command -v delta)" ]]; then
+    if [[ -t 1 ]] && [[ -n "$(command -v delta)" ]]; then
       echo "${diff}" \
         | sed '1,2d' \
         | delta --hunk-header-style='line-number' --pager 'less -rFX'
