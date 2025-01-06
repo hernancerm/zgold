@@ -175,7 +175,7 @@ function _run_test {
     if [[ -t 1 ]] && [[ -n "$(command -v delta)" ]]; then
       echo "${diff}" \
         | sed '1,2d' \
-        | delta --hunk-header-style='line-number' --pager 'less -rFX'
+        | delta --hunk-header-style='line-number' --paging='never'
       echo
     else
       echo "${diff}"
