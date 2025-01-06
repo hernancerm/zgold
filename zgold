@@ -244,7 +244,7 @@ fi
 
 if [[ "${args[--version]}" = 'true' ]] \
     || [[ "${args[-v]}" = 'true' ]]; then
-  echo '0.5.0'
+  echo '0.5.1-dev'
   exit 0
 fi
 
