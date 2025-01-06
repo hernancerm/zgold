@@ -1,7 +1,7 @@
-resources='test/pre_diff_hooks'
+resources='test/mask_with_a_pre_diff_hook'
 
 typeset -A test_cases=(
-  timestamp
+  mask_timestamp
   "date +'%d/%m/%y@%H:%M:%S'; echo 'The line above changes on every run.'"
 )
 
@@ -21,6 +21,6 @@ EOF
 )"
 
 typeset -A pre_diff_hooks=(
-  timestamp
+  mask_timestamp
   "${pre_diff_hook_cmd}"
 )

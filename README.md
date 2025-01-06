@@ -1,15 +1,17 @@
 # ZGold
 
-Tool written in Zsh for implementing simple golden tests on stdout/stderr.
+Zsh command line tool for golden tests on stdout/stderr.
 
 ## Features
 
-- Declarative test cases specification.
+- Declarative.
 - Can be used to test software written in any language.
-- View diffs of non-passing tests using [delta](https://github.com/dandavison/delta).
-- Patch the golden files of failing test cases.
+- View diffs of failed tests in [delta](https://github.com/dandavison/delta).
+- Patch golden files.
 
 ## Installation
+
+Only tested on macOS.
 
 1. Install [GNU Make](https://www.gnu.org/software/make/). On macOS it's
    installed with the Xcode Command Line Tools. Run `make -v` to check.
@@ -18,13 +20,19 @@ Tool written in Zsh for implementing simple golden tests on stdout/stderr.
 
 ## Usage
 
-See the built-in help with `zgold --help`
+Once ZGold is installed:
 
-Example: `zgold test/pass_fail/config.zsh run`
+- See the built-in help with `zgold --help`
+- For sample output, execute this in this repo: `zgold -b test/*`
 
 ## Development
 
 [DEVELOP.md](./DEVELOP.md)
+
+## Inspiration
+
+ZGold's output format mirrors that of
+[ZUnit](https://github.com/zunit-zsh/zunit).
 
 ## License
 

@@ -218,3 +218,6 @@ Other resources:
 - Alternatively, there is a debugger, [zshdb](https://github.com/rocky/zshdb),
   which can be installed with Homebrew: `brew install zshdb`. I have not found
   editor/IDE integration, so it's somewhat uncomfortable to use.
+- To force print to the terminal redirect the output to `/dev/tty`. This is
+  useful for inspecting parameters in functions, where the stdout of a regular
+  echo would be consumed by the caller.

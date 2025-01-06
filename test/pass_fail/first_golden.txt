@@ -1,1 +1,0 @@
-A test case. Resources: test/pass_fail

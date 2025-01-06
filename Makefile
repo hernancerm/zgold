@@ -10,7 +10,7 @@ all: install
 
 .PHONY: test
 test: install
-	zgold -d $(shell find './test' -type d)
+	@zgold -b ./test/*
 
 .PHONY: install
 install: delta /usr/local/bin/zgold /usr/local/bin/zgold.zwc
