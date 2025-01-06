@@ -138,9 +138,9 @@ function _run_test {
   # Hint on slow tests.
   if [[ -t 1 ]]; then
     if [[ -d "${args_pos[1]}" ]]; then
-      _pecho '\e[90m' "$(basename -a ${2}) -- ${1}"
+      _pecho '\e[90m' "↷ $(basename -a ${2}) -- ${1}"
     else
-      _pecho '\e[90m' "${1}"
+      _pecho '\e[90m' "↷ ${1}"
     fi
   fi
 
@@ -170,8 +170,9 @@ function _run_test {
     else
       _pechon '\e[31m' '✘'; echo " ${1}"
     fi
-    _pecho '\e[31m\e[4m' 'Unexpected output for command:'
-    _pechon '\e[31m' "${3}"
+    _pecho '\e[31m\e[4m' "Command executed:"
+    _pecho '\e[31m' "${3}"
+    _pechon '\e[31m\e[4m' "Diff between golden file and command output:"
     if [[ -t 1 ]] && [[ -n "$(command -v delta)" ]]; then
       echo "${diff}" \
         | sed '1,2d' \
