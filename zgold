@@ -11,29 +11,28 @@ typeset -r help_message='USAGE
     <config-file>
       Config file path, written in Zsh. If this arg is a dir path instead of a
       file path, then the file is assumed to be `config.zsh` within the dir. The
-      config file must define the following vars:
+      config file must define the following params:
         * test_cases
             Associative array. Keys are test case names and values are commands.
             The output of the commands gets compared against the golden files.
         * resources
-            Holds the path to a dir to provide data for the command. At a
-            minimum, it is expected that for each test case there is one golden
-            file in this directory with the name `<test_case_name>_golden.txt`.
-      Optionally, the config file may also define these vars:
+            Dir path where the golden files `<test_case_name>_golden.txt` are.
+      Optionally, the config file may also define these params:
         * pre_diff_hooks
             Associative array. Keys are test case names and values are commands.
             The output of the test case command is piped to the pre diff hook
             command. This happens before the diff against the golden file. This
             is useful to remove parts of the output of the test case command
             which are expected to change among runs, such as timestamps.
+            Also affects patching.
     <sub-command>
       See the section SUB-COMMANDS. Default: `run`.
 
   o zgold -b <directory...>
     Batch run. Execute the sub-command `run` for every directory.
     <directory>
-      A dir which has a `config.zsh` file as per expected by the command form
-      `zgold <config-file [<sub-command>]`. Useful for CI.
+      A dir which has a `config.zsh` file as per expected by the form
+      `zgold <config-file> [<sub-command>]`. Useful for CI.
 
 SUB-COMMANDS
   * ls
@@ -46,8 +45,8 @@ SUB-COMMANDS
       Execute the command corresponding to a test case by name.
 
 EXIT CODES
-  * When a positive integer, the exit code is the total of failed test cases.
-  * When -1, a config file is invalid.
+  * >= 0  Total amount of failed test cases.
+  * -1    Invalid config file.
 
 EXAMPLES
   * List all test cases: `zgold test/all_pass/config.zsh ls`
