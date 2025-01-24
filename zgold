@@ -135,15 +135,6 @@ function _validate_config_file_params_are_loaded {
 ## @param $3 Command used to get the result to compare with the golden file.
 ## @stdout Diff on failure, nothing otherwise.
 function _run_test {
-  # Hint on slow tests.
-  if [[ -t 1 ]]; then
-    if [[ -d "${args_pos[1]}" ]]; then
-      _pecho '\e[90m' "↷ $(basename -a ${2}) -- ${1}"
-    else
-      _pecho '\e[90m' "↷ ${1}"
-    fi
-  fi
-
   # setup
   local cmd_output="$(eval ${3})"
   local golden_file_path="${2}/${1}_golden.txt"
@@ -160,11 +151,6 @@ function _run_test {
 
   # verify
   if [[ -n "${diff}" ]]; then
-    if [[ -t 1 ]]; then
-      # Overwrite last line in terminal.
-      # <https://stackoverflow.com/a/11283685>.
-      echo -n "\e[1A\e[K"
-    fi
     if [[ -d "${args_pos[1]}" ]]; then
       _pechon '\e[31m' '✘'; echo " $(basename -a ${2}) -- ${1}"
     else
@@ -182,9 +168,6 @@ function _run_test {
       echo "${diff}"
     fi
     return 1
-  fi
-  if [[ -t 1 ]]; then
-    echo -n "\e[1A\e[K"
   fi
   if [[ -d "${args_pos[1]}" ]]; then
     _pechon '\e[32m' '✔'; echo " $(basename -a ${2}) -- ${1}"
