@@ -24,7 +24,7 @@ type](#data-types-for-comment-docs) and an optional description.
 
 | Annotation             | Explanation                                                |
 |------------------------|------------------------------------------------------------|
-| `@param[:{type}] ${n}` | Function param, e.g., `@param $1`, `@param:int $1 Index.`  |
+| `@param ${n}[:{type}]` | Function param, e.g., `@param $1`, `@param $1:int Index.`  |
 | `@stdin[:{type}]`      | Standard input, e.g., `@stdin File contents of users.txt.` |
 | `@stdout[:{type}]`     | Standard output, e.g., `@stdout Greeting.`                 |
 | `@return ${n}`         | Function's exit code, e.g., `0`, `1`.                      |
@@ -64,9 +64,8 @@ Function `tac`: Convert either iarray→ciarray or aarray→caarray:
 
 ```sh
 ## To Array Contents.
-## If the arg $1 is an iarray, then stdout is a ciarray.
-## If the arg $1 is an aarray, then stdout is a caarray.
-## @param:iarray|aarray $1
+## Convert either iarray->ciarray or aarray->caarray.
+## @param $1:iarray|aarray
 ## @stdout:ciarray|caarray
 function tac {
   echo "${${(S)${1}/*=/}[3,-3]}"
