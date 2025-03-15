@@ -22,12 +22,13 @@ provides support for these, it's just an ad-hoc standard. These comments begin
 with two pound symbols (#) followed by an annotation, an optional [data
 type](#data-types-for-comment-docs) and an optional description.
 
-| Annotation             | Explanation                                                |
-|------------------------|------------------------------------------------------------|
-| `@param ${n}[:{type}]` | Function param, e.g., `@param $1`, `@param $1:int Index.`  |
-| `@stdin[:{type}]`      | Standard input, e.g., `@stdin File contents of users.txt.` |
-| `@stdout[:{type}]`     | Standard output, e.g., `@stdout Greeting.`                 |
-| `@return ${n}`         | Function's exit code, e.g., `0`, `1`.                      |
+| Annotation                           | Description         |
+|--------------------------------------|---------------------|
+| `@param $<n>[:<type>] [description]` | Non-variadic param. |
+| `@param $.[:<type>] [description]`   | Variadic param.     |
+| `@stdin[:<type>] [description]`      | Standard input.     |
+| `@stdout[:<type>] [description]`     | Standard output.    |
+| `@return <n> [description]`          | Exit code.          |
 
 ## Data types for comment docs
 
