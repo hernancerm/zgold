@@ -69,12 +69,21 @@ function parse_args {
     fi
     # If arg begins with a dash (-) then it's an option.
     if [[ "${${user_args[${i}]}[1]}" = '-' ]]; then
-      # Check if the option is bool(ean).
       if [[ ${bool_opts[(i)${user_args[i]}]} -le ${#bool_opts} ]]; then
+        # The option is a bool(ean).
         args+=(["${user_args[${i}]}"]='true')
       else
-        args+=(["${user_args[${i}]}"]="${user_args[$((i+1))]}")
-        skip_parse_of_current_arg='true'
+        # The option accepts a value.
+        if [[ "${${user_args[${i}]}[(i)=]}" -lt ${#user_args[${i}]} ]]; then
+          # The option name and value are separated by an equal symbol (=).
+          local opt_equal_symbol_lhs="${${(s:=:)${user_args[${i}]}}[1]}"
+          local opt_equal_symbol_rhs="${${(s:=:)${user_args[${i}]}}[2]}"
+          args+=(["${opt_equal_symbol_lhs}"]="${opt_equal_symbol_rhs}")
+        else
+          # The option name and value are separated by whitespace.
+          args+=(["${user_args[${i}]}"]="${user_args[$((i+1))]}")
+          skip_parse_of_current_arg='true'
+        fi
       fi
       continue
     fi
@@ -89,7 +98,6 @@ function parse_args {
       args+=([${flag_name}]=${flag_value})
     fi
   done
-  # Print aarray.
   typeset -p args
 }
 
