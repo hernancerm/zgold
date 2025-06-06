@@ -11,15 +11,17 @@ Zsh command line tool for golden tests on stdout/stderr.
 
 ## Installation
 
-1. Install [GNU Make](https://www.gnu.org/software/make/). On macOS it's
-   installed with the Xcode Command Line Tools. Run `make -v` to check.
-2. In a clone of this repo run `make`.
+1. Add the [Homebrew](https://brew.sh/) tap:
 
-Optionally (recommended), install [delta](https://github.com/dandavison/delta).
+```
+brew tap hernancerm/formulas https://github.com/hernancerm/formulas
+```
 
-## Uninstall
+2. Install ZGold:
 
-Run `make uninstall`.
+```
+brew install zgold
+```
 
 ## Usage
 
