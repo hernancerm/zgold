@@ -127,9 +127,14 @@ function _pecho {
 
 ## @param $1 Resources dir path.
 ## @param $2 Test case names.
-function _validate_config_file_params_are_loaded {
+function _validate_config_file_params {
   if [[ -z "${1}" ]]; then
     _pecho '\e[31m' 'The param "resources" is not defined in the config file.'
+    exit -1
+  fi
+  if ! [[ -d "${1}" ]]; then
+    _pecho '\e[31m' 'Bad value for param "resources" in the config file.'
+    _pecho '\e[31m' "Directory not found: ${1}"
     exit -1
   fi
   if [[ -z "${2}" ]]; then
@@ -250,7 +255,7 @@ if [[ "${args[-b]}" = 'true' ]]; then
   local start_time=$(date +%s)
   for dir in ${args_pos}; do
     . "${dir}/config.zsh"
-    _validate_config_file_params_are_loaded \
+    _validate_config_file_params \
       "${resources}" "${(k)test_cases}"
     for test_case_name test_case_command in ${(kv)test_cases}; do
       _run_test "${test_case_name}" "${resources}" "${test_case_command}"
@@ -286,7 +291,7 @@ function run {
   _print_header
   echo
   typeset -i exit_code=0
-    _validate_config_file_params_are_loaded \
+    _validate_config_file_params \
       "${resources}" "${(k)test_cases}"
   # Run all tests from a config file.
   if [[ -z ${1} ]]; then
