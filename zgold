@@ -149,7 +149,7 @@ function _validate_config_file_params {
 ## @stdout Diff on failure, nothing otherwise.
 function _run_test {
   # setup
-  local cmd_output="$(eval ${3})"
+  local cmd_output="$(eval ${3} 2>&1)"
   local golden_file_path="${2}/${1}_golden.txt"
   if ! [[ -f "${golden_file_path}" ]]; then
     touch "${golden_file_path}"
@@ -194,7 +194,7 @@ function _run_test {
 ## @param $3 Command used to get the result to compare with the golden file.
 ## @stdout Patch info.
 function _patch_test {
-  local cmd_output="$(eval ${3})"
+  local cmd_output="$(eval ${3} 2>&1)"
   local golden_file_path="${2}/${1}_golden.txt"
   if ! [[ -f "${golden_file_path}" ]]; then
     touch "${golden_file_path}"
